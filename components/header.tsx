@@ -30,6 +30,16 @@ export function Header() {
           </Link>
           
           <div className="flex items-center gap-3">
+            {/* Docs Link */}
+            <Link
+              href="https://docs.gotproof.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 md:block"
+            >
+              Docs
+            </Link>
+
             {/* Start Verifying Button */}
             <button
               onClick={() => setIsModalOpen(true)}

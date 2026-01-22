@@ -24,6 +24,12 @@ export function Footer() {
           
           {/* Links */}
           <div className="flex items-center gap-8">
+            <Link href="https://docs.gotproof.xyz" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
+              Docs
+            </Link>
+            <a href="mailto:Support@Gotproof.xyz" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
+              Support
+            </a>
             <Link href="#features" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
               Features
             </Link>
