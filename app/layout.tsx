@@ -27,11 +27,20 @@ export const metadata: Metadata = {
     title: '$PROOF - Payment Proofs',
     description: 'Verify Projects Spend, On-Chain',
     type: 'website',
+    images: [
+      {
+        url: 'https://gotproof.xyz/og-logo.png',
+        width: 1200,
+        height: 1200,
+        alt: '$PROOF - Payment Proofs',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: '$PROOF - Payment Proofs',
     description: 'Verify Projects Spend, On-Chain',
+    images: ['https://gotproof.xyz/og-logo.png'],
   },
 }
 
