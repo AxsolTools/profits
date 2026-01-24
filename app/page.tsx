@@ -1,12 +1,10 @@
 import { Header } from '@/components/header'
 import { Hero } from '@/components/hero'
-import { ProofTiers } from '@/components/proof-tiers'
-import { Stats } from '@/components/stats'
-import { Features } from '@/components/features'
 import { HowItWorks } from '@/components/how-it-works'
-import { ProofExamples } from '@/components/proof-examples'
-import { TweetCarousel } from '@/components/tweet-carousel'
-import { LiveProofsFeed } from '@/components/live-proofs-feed'
+import { UseCaseMatrix } from '@/components/use-case-matrix'
+import { UserRoleTabs } from '@/components/user-role-tabs'
+import { ProtocolEconomy } from '@/components/protocol-economy'
+import { TechSpecs } from '@/components/tech-specs'
 import { CTASection } from '@/components/cta-section'
 import { Footer } from '@/components/footer'
 
@@ -16,21 +14,11 @@ export default function Home() {
       <Header />
       <main className="relative min-h-screen overflow-hidden bg-background">
         <Hero />
-        <Stats />
-        
-        {/* Live Activity Feed - Moved up for immediate social proof */}
-        <LiveProofsFeed />
-        
-        <ProofExamples />
+        <UserRoleTabs />
         <HowItWorks />
-        <TweetCarousel />
-        
-        {/* Features Grid - More technical deep dive */}
-        <Features />
-        
-        {/* Trust/Tiers - Social proof */}
-        <ProofTiers />
-        
+        <TechSpecs />
+        <UseCaseMatrix />
+        <ProtocolEconomy />
         <CTASection />
       </main>
       <Footer />

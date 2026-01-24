@@ -1,164 +1,76 @@
+'use client'
+
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
+
 export function HowItWorks() {
+  const prefersReducedMotion = useReducedMotion()
+
+  const steps = [
+    {
+      id: '01',
+      title: 'Lock Funds',
+      desc: 'Buyer deposits funds into a non-custodial Streamflow smart contract.',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+      )
+    },
+    {
+      id: '02',
+      title: 'Submit Proof',
+      desc: 'Seller uploads evidence (tracking, files) to the platform for verification.',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+      )
+    },
+    {
+      id: '03',
+      title: 'Dispute & Vote',
+      desc: 'If contested, $PROOF holders review evidence and vote via Realms DAO.',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
+      )
+    },
+    {
+      id: '04',
+      title: 'Execute',
+      desc: 'Smart contract automatically releases funds based on the consensus outcome.',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+      )
+    }
+  ]
+
   return (
-    <section id="how-it-works" className="relative px-6 py-32 overflow-hidden" aria-labelledby="how-it-works-title">
-      {/* Section header */}
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-20 text-center">
-          <h2 id="how-it-works-title" className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
+    <section className="py-24 bg-white relative overflow-hidden" id="how-it-works">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 font-[family-name:var(--font-montserrat)] tracking-tight mb-4">
             The Flow
           </h2>
-          <p className="mx-auto max-w-xl text-lg text-gray-500">
-            Crypto in. Verified fiat out. Public proof always.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            A fully decentralized loop ensuring fair outcomes for every transaction.
           </p>
         </div>
 
-        {/* Horizontal Flow - Desktop */}
-        <div className="hidden lg:block">
-          <div className="relative">
-            {/* Connection line */}
-            <div className="absolute top-1/2 left-0 right-0 h-px -translate-y-1/2" aria-hidden="true">
-              <div className="h-full w-full bg-gradient-to-r from-transparent via-[#1DA1F2]/50 to-transparent" />
-            </div>
-            
-            {/* Flow nodes */}
-            <div className="relative grid grid-cols-4 gap-8">
-              
-              {/* Node 1 - Connect */}
-              <div className="relative">
-                <div className="flex flex-col items-center">
-                  {/* Icon container */}
-                  <div className="relative z-10 mb-6">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white ring-4 ring-[#1DA1F2]/30">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#1DA1F2] to-[#0d8ecf]">
-                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/>
-                        </svg>
-                      </div>
-                    </div>
-                    {/* Pulse ring */}
-                    <div className="absolute inset-0 animate-ping rounded-full bg-[#1DA1F2]/20" style={{ animationDuration: '2s' }} />
-                  </div>
-                  
-                  <h4 className="mb-2 text-lg font-semibold text-gray-900">Connect Wallet</h4>
-                  <p className="text-center text-sm text-gray-500">
-                    Link any major wallet. Phantom, MetaMask, Coinbase—all supported.
-                  </p>
-                </div>
-              </div>
-              
-              {/* Node 2 - Select */}
-              <div className="relative">
-                <div className="flex flex-col items-center">
-                  <div className="relative z-10 mb-6">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white ring-4 ring-[#22c55e]/30">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
-                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h4 className="mb-2 text-lg font-semibold text-gray-900">Select Creator</h4>
-                  <p className="text-center text-sm text-gray-500">
-                    Paste any GoFundMe, Patreon, or creator link. Processed automatically.
-                  </p>
-                </div>
-              </div>
-              
-              {/* Node 3 - Pledge */}
-              <div className="relative">
-                <div className="flex flex-col items-center">
-                  <div className="relative z-10 mb-6">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white ring-4 ring-[#f59e0b]/30">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#f59e0b] to-[#d97706]">
-                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h4 className="mb-2 text-lg font-semibold text-gray-900">Pledge Crypto</h4>
-                  <p className="text-center text-sm text-gray-500">
-                    Send ETH, SOL, USDC. Delivered instantly.
-                  </p>
-                </div>
-              </div>
-              
-              {/* Node 4 - Verify */}
-              <div className="relative">
-                <div className="flex flex-col items-center">
-                  <div className="relative z-10 mb-6">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white ring-4 ring-[#1DA1F2]/30">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#1DA1F2] to-[#0d8ecf]">
-                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                      </div>
-                    </div>
-                    {/* Success indicator */}
-                    <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#22c55e]">
-                      <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <path d="M5 13l4 4L19 7"/>
-                      </svg>
-                    </div>
-                  </div>
-                  
-                  <h4 className="mb-2 text-lg font-semibold text-gray-900">Public Proof</h4>
-                  <p className="text-center text-sm text-gray-500">
-                    Auto-posted to X with on-chain verification. Transparent forever.
-                  </p>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+          {/* Connection Line */}
+          <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-gray-100 -z-10" />
 
-        {/* Mobile/Tablet Flow */}
-        <div className="lg:hidden">
-          <div className="relative space-y-6">
-            {[
-              { icon: 'wallet', color: '#1DA1F2', title: 'Connect Wallet', desc: 'Link any major wallet' },
-              { icon: 'user', color: '#22c55e', title: 'Select Creator', desc: 'Paste any creator link' },
-              { icon: 'dollar', color: '#f59e0b', title: 'Pledge Crypto', desc: 'Send and convert instantly' },
-              { icon: 'check', color: '#1DA1F2', title: 'Public Proof', desc: 'Verified on X forever' },
-            ].map((step, i) => (
-              <div key={i} className="flex items-center gap-6">
-                <div 
-                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl"
-                  style={{ backgroundColor: `${step.color}20` }}
-                >
-                  <div 
-                    className="flex h-10 w-10 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: step.color }}
-                  >
-                    <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      {step.icon === 'wallet' && <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3"/>}
-                      {step.icon === 'user' && <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>}
-                      {step.icon === 'dollar' && <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 10v1"/>}
-                      {step.icon === 'check' && <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>}
-                    </svg>
-                  </div>
+          {steps.map((step, i) => (
+            <div key={step.id} className="relative bg-white pt-8 group">
+              <div className="w-16 h-16 rounded-2xl bg-white border-2 border-gray-100 flex items-center justify-center text-gray-900 shadow-lg mb-6 mx-auto group-hover:border-[var(--proof-primary)] group-hover:text-[var(--proof-primary)] transition-all z-10 relative">
+                {step.icon}
+                <div className="absolute -top-3 -right-3 bg-gray-900 text-white text-xs font-bold px-2 py-1 rounded-full border-2 border-white">
+                  {step.id}
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">{step.title}</h4>
-                  <p className="text-sm text-gray-500">{step.desc}</p>
-                </div>
-                {i < 3 && (
-                  <div className="absolute left-8 ml-px h-6 w-px bg-gradient-to-b from-white/20 to-transparent" style={{ top: `${(i + 1) * 88 + 64}px` }} />
-                )}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom tagline */}
-        <div className="mt-20 text-center">
-          <p className="text-lg text-gray-400">
-            Paste a link. Automatically verified.
-          </p>
+              
+              <div className="text-center px-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{step.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

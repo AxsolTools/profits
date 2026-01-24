@@ -1,125 +1,83 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
-import { PlatformTicker } from './platform-ticker'
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import proofsLogo from '../Proofslogotransparent.png'
-
-const rotatingWords = [
-  'Assets',
-  'Ownership',
-  'Spending',
-  'Payroll',
-  'Subscriptions',
-  'Tokenization',
-]
+import { Button } from '@/components/ui/button'
+import { Player } from '@remotion/player'
+import { FluidLedger } from './animations/fluid-ledger'
 
 export function Hero() {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0)
-  const [animationState, setAnimationState] = useState<'enter' | 'exit'>('enter')
-  const prefersReducedMotion = useReducedMotion()
-
-  useEffect(() => {
-    if (prefersReducedMotion) return
-
-    const interval = setInterval(() => {
-      setAnimationState('exit')
-      
-      setTimeout(() => {
-        setCurrentWordIndex((prev) => (prev + 1) % rotatingWords.length)
-        setAnimationState('enter')
-      }, 200)
-    }, 2500) // Slower rotation for better readability
-
-    return () => clearInterval(interval)
-  }, [prefersReducedMotion])
-
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-24 pb-12">
-      {/* Enhanced Gradient overlay */}
-      <div 
-        className="pointer-events-none absolute inset-0 z-0"
-        style={{
-          background: 'radial-gradient(ellipse 80% 50% at 50% 30%, var(--proof-primary-glow) 0%, transparent 60%)',
-        }}
-        aria-hidden="true"
-      />
-      
-      {/* Main content */}
-      <div className="relative z-10 mx-auto max-w-5xl text-center">
-        {/* Verification badge - Enhanced with glassmorphism */}
-        <div className="mb-12 flex justify-center" style={{ perspective: '1000px' }}>
-          <div className="relative group cursor-pointer">
-            <div className="absolute inset-0 bg-[var(--proof-primary)]/20 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-700 opacity-50" />
-            <Image
-              src={proofsLogo}
-              alt="Payment Proofs Verification Badge"
-              width={140}
-              height={140}
-              className={`relative z-10 h-32 w-32 sm:h-40 sm:w-40 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105 ${prefersReducedMotion ? '' : 'animate-spin-y'}`}
-              priority
-            />
-          </div>
-        </div>
-        
-        {/* Main headline with enhanced rotating text */}
-        <h1 className="mb-8 flex flex-col items-center justify-center gap-2 py-1 text-5xl font-black leading-tight tracking-tight text-gray-900 sm:flex-row sm:gap-4 sm:text-6xl md:text-7xl lg:text-8xl font-[family-name:var(--font-montserrat)]">
-          <span>PROOF:</span>
-          <span 
-            className="block min-w-0 py-1 bg-gradient-to-r from-[var(--proof-primary)] to-[var(--proof-accent)] bg-clip-text text-transparent"
-            style={prefersReducedMotion ? undefined : { 
-              transform: animationState === 'enter' ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.9)',
-              opacity: animationState === 'enter' ? 1 : 0,
-              filter: animationState === 'enter' ? 'blur(0px)' : 'blur(8px)',
-              transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            }}
-          >
-            {rotatingWords[currentWordIndex]}
-          </span>
-        </h1>
-        
-        {/* Subheadline - More direct value prop */}
-        <p className="mx-auto mb-12 max-w-2xl text-xl text-gray-600 sm:text-2xl font-medium leading-relaxed">
-          The decentralized standard for verifiable payments. <br className="hidden sm:block" />
-          Escrow, dispute resolution, and on-chain proof for everyone.
-        </p>
-        
-        {/* CTA Buttons - Upgraded to App triggers */}
-        <div className="mb-20 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/create"
-            className="group relative overflow-hidden flex h-16 items-center gap-3 rounded-full bg-[var(--proof-primary)] px-12 text-xl font-bold text-white transition-all hover:scale-105 shadow-xl shadow-[var(--proof-primary)]/30 hover:shadow-[var(--proof-primary)]/50"
-          >
-            <span className="relative z-10">Launch App</span>
-            <svg 
-              className="relative z-10 h-6 w-6 transition-transform group-hover:translate-x-1" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          </Link>
-          
-          <Link
-            href="/dashboard"
-            className="flex h-16 items-center gap-3 rounded-full border-2 border-gray-200 bg-white px-12 text-xl font-bold text-gray-900 transition-all hover:border-[var(--proof-primary)]/30 hover:bg-gray-50 hover:text-[var(--proof-primary)]"
-          >
-            View Dashboard
-          </Link>
-        </div>
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-6 pt-32 pb-20 bg-white">
+      {/* Remotion Background Layer */}
+      <div className="absolute inset-0 z-0 opacity-60">
+        <Player
+          component={FluidLedger}
+          durationInFrames={300}
+          fps={30}
+          compositionWidth={1920}
+          compositionHeight={1080}
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+          controls={false}
+          loop
+          autoPlay
+        />
       </div>
       
-      {/* Platform ticker at bottom of hero */}
-      <div className="relative z-10 w-full mt-auto">
-        <p className="mb-6 text-center text-sm font-bold uppercase tracking-[0.2em] text-gray-400">
-          Trusted across 100+ Platforms
+      {/* Content Layer - Z-index 10 ensures clicks work */}
+      <div className="relative z-10 max-w-5xl mx-auto text-center space-y-12">
+        {/* Headline */}
+        <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-gray-900 tracking-tight leading-[0.9] font-[family-name:var(--font-montserrat)] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+          Trustless <br />
+          <span className="bg-gradient-to-r from-[var(--proof-primary)] to-[var(--proof-accent)] bg-clip-text text-transparent">
+            Escrow Protocol
+          </span>
+        </h1>
+
+        {/* Subheadline */}
+        <p className="max-w-2xl mx-auto text-xl sm:text-2xl text-gray-600 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+          Secure non-custodial payments for any transaction. 
+          Verified on-chain, governed by token holders, and fully decentralized.
         </p>
-        <PlatformTicker />
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+          <Link href="/create" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto h-16 px-10 rounded-full bg-[var(--proof-primary)] hover:bg-[var(--proof-primary-hover)] text-white text-lg font-bold shadow-xl shadow-[var(--proof-primary)]/20 transition-all hover:scale-105">
+              Create Escrow
+            </Button>
+          </Link>
+          <Link href="/dashboard" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto h-16 px-10 rounded-full border-2 border-gray-200 bg-white/50 hover:bg-white text-gray-900 text-lg font-bold hover:border-[var(--proof-primary)]/30 transition-all shadow-sm backdrop-blur-sm">
+              View Dashboard
+            </Button>
+          </Link>
+        </div>
+
+        {/* Stats Grid - Light Mode Glass */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16 border-t border-gray-200/50 mt-16 animate-in fade-in duration-1000 delay-500 relative">
+          <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/50 shadow-sm">
+            <p className="text-3xl font-black text-gray-900">$2.4M+</p>
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mt-1">Volume Secured</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/50 shadow-sm">
+            <p className="text-3xl font-black text-gray-900">12k+</p>
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mt-1">Transactions</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/50 shadow-sm">
+            <p className="text-3xl font-black text-gray-900">0%</p>
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mt-1">Custodial Risk</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/50 shadow-sm">
+            <p className="text-3xl font-black text-gray-900">&lt; 1s</p>
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mt-1">Settlement</p>
+          </div>
+        </div>
       </div>
     </section>
   )
