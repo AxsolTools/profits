@@ -16,13 +16,21 @@ export default function Home() {
       <Header />
       <main className="relative min-h-screen overflow-hidden bg-background">
         <Hero />
-        <ProofTiers />
         <Stats />
-        <ProofExamples />
-        <TweetCarousel />
+        
+        {/* Live Activity Feed - Moved up for immediate social proof */}
         <LiveProofsFeed />
-        <Features />
+        
+        <ProofExamples />
         <HowItWorks />
+        <TweetCarousel />
+        
+        {/* Features Grid - More technical deep dive */}
+        <Features />
+        
+        {/* Trust/Tiers - Social proof */}
+        <ProofTiers />
+        
         <CTASection />
       </main>
       <Footer />
