@@ -4,82 +4,68 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import proofsLogo from '../Proofslogotransparent.png'
+import { Button } from '@/components/ui/button'
 
 export function Header() {
   return (
-    <>
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
-        <nav className="flex w-full items-center justify-between" aria-label="Main navigation">
-          <Link href="/" className="flex items-center gap-3">
-            <div style={{ perspective: '500px' }}>
+    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+      <div className="absolute inset-0 bg-white/70 backdrop-blur-xl border-b border-gray-200/50" />
+      
+      <div className="relative mx-auto flex h-24 w-full max-w-[1920px] items-center justify-between px-8 md:px-12">
+        {/* Left: Logo */}
+        <div className="flex-1 flex justify-start">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative h-10 w-10 transition-transform duration-500 group-hover:rotate-180">
               <Image
                 src={proofsLogo}
-                alt="Payment Proofs Logo"
-                width={48}
-                height={48}
-                className="h-12 w-12 animate-spin-y"
-                priority
+                alt="PROOF"
+                fill
+                className="object-contain"
               />
             </div>
-            <span className="text-xl font-bold tracking-tight text-gray-900">
-              $PROOF
+            <span className="text-2xl font-black tracking-tight text-gray-900 font-[family-name:var(--font-montserrat)]">
+              PROOF
             </span>
           </Link>
+        </div>
+
+        {/* Center: Navigation Pill - Absolute Center */}
+        <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <nav className="flex items-center gap-1 bg-gray-100/80 p-1.5 rounded-full border border-gray-200/50 backdrop-blur-md shadow-sm">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="rounded-full px-6 h-11 text-gray-600 font-bold hover:text-gray-900 hover:bg-white hover:shadow-sm transition-all text-base">
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="/governance">
+              <Button variant="ghost" className="rounded-full px-6 h-11 text-gray-600 font-bold hover:text-gray-900 hover:bg-white hover:shadow-sm transition-all text-base">
+                Governance
+              </Button>
+            </Link>
+            <Link href="/developers">
+              <Button variant="ghost" className="rounded-full px-6 h-11 text-gray-600 font-bold hover:text-gray-900 hover:bg-white hover:shadow-sm transition-all text-base">
+                Developers
+              </Button>
+            </Link>
+          </nav>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex-1 flex justify-end items-center gap-6">
+          <Link href="https://docs.gotproof.xyz" target="_blank" className="hidden xl:block text-base font-bold text-gray-500 hover:text-gray-900 transition-colors">
+            Docs
+          </Link>
           
-          <div className="flex items-center gap-3">
-            {/* Dashboard Link */}
-            <Link
-              href="/dashboard"
-              className="hidden text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 md:block"
-            >
-              Dashboard
-            </Link>
-
-            {/* Docs Link */}
-            <Link
-              href="https://docs.gotproof.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 md:block"
-            >
-              Docs
-            </Link>
-
-            {/* Launch App Button */}
-            <Link
-              href="/create"
-              className="hidden sm:flex h-10 items-center gap-2 rounded-full bg-[var(--proof-primary)] px-5 text-sm font-semibold text-white transition-all hover:bg-[var(--proof-primary-hover)] hover:shadow-lg hover:shadow-[var(--proof-primary)]/25"
-              aria-label="Launch application"
-            >
-              <span>Launch App</span>
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          <Link href="/create">
+            <Button className="h-12 px-8 rounded-full bg-gray-900 hover:bg-black text-white text-base font-bold shadow-lg shadow-gray-200 hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
+              Launch App
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-            </Link>
-            
-            {/* X/Twitter Link */}
-            <Link
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50"
-              aria-label="Follow us on X (Twitter)"
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-            </Link>
-            
-            {/* Buy $PROOF */}
-            <Link
-              href="#buy"
-              className="flex h-10 items-center gap-2 rounded-full border border-[var(--proof-primary)] bg-transparent px-5 text-sm font-semibold text-[var(--proof-primary)] transition-all hover:bg-[var(--proof-primary)]/10"
-            >
-              Buy $PROOF
-            </Link>
-          </div>
-        </nav>
-      </header>
-    </>
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </header>
   )
 }

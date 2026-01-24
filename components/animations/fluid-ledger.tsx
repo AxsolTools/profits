@@ -16,7 +16,7 @@ export const FluidLedger = () => {
       id: i,
       x: (width / 40) * i,
       speed: 0.002 + Math.random() * 0.001,
-      color: i % 2 === 0 ? '#3b82f6' : '#14b8a6', // Blue or Teal
+      color: i % 2 === 0 ? '#2563eb' : '#0d9488', // Blue or Teal (Darkened)
       width: Math.random() * 2 + 1,
     }))
   }, [width])
@@ -78,11 +78,11 @@ export const FluidLedger = () => {
 
         <defs>
           <radialGradient id="blueOrb" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#3b82f6" />
+            <stop offset="0%" stopColor="#2563eb" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
           <radialGradient id="tealOrb" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#14b8a6" />
+            <stop offset="0%" stopColor="#0d9488" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
         </defs>

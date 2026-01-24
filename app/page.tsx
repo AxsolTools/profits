@@ -13,13 +13,13 @@ export default function Home() {
     <>
       <Header />
       <main className="relative min-h-screen overflow-hidden bg-background">
-        <Hero />
+      <Hero />
         <UserRoleTabs />
-        <HowItWorks />
+      <HowItWorks />
         <TechSpecs />
         <UseCaseMatrix />
         <ProtocolEconomy />
-        <CTASection />
+      <CTASection />
       </main>
       <Footer />
     </>
