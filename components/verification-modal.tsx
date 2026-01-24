@@ -103,25 +103,27 @@ export function VerificationModal({ isOpen, onClose }: VerificationModalProps) {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Prepare payload for backend
-    const payload = {
-      tokenHoldings: formData.tokenHoldings,
-      telegramUsername: formData.telegramUsername,
-      service: formData.service,
-      description: formData.description,
-      submittedAt: new Date().toISOString(),
-    }
+    try {
+      const { api: apiClient } = await import('@/lib/api')
+      await apiClient.verificationRequests.create({
+        tokenHoldings: formData.tokenHoldings,
+        telegramUsername: formData.telegramUsername,
+        service: formData.service,
+        description: formData.description,
+      })
 
-    // TODO: Replace with actual API endpoint
-    console.log('[v0] Submission payload ready for backend:', payload)
-
-    // Simulate submission delay
-    setTimeout(() => {
       setIsSubmitting(false)
       if (api) {
         api.scrollTo(4) // Go to thank you screen
       }
-    }, 1000)
+    } catch (error) {
+      console.error('Failed to submit verification request:', error)
+      setIsSubmitting(false)
+      // Still go to thank you screen even if submission fails
+      if (api) {
+        api.scrollTo(4)
+      }
+    }
   }
 
   const handleClose = () => {
@@ -256,7 +258,8 @@ export function VerificationModal({ isOpen, onClose }: VerificationModalProps) {
                     <div>
                       <Input
                         type="text"
-                        placeholder="(Insert here)"
+                        placeholder="Enter your Telegram username"
+                        aria-label="Telegram username"
                         value={formData.telegramUsername}
                         onChange={(e) =>
                           setFormData({
@@ -303,8 +306,11 @@ export function VerificationModal({ isOpen, onClose }: VerificationModalProps) {
                         setTimeout(() => handleNext(), 300)
                       }}
                     >
-                      <SelectTrigger className="w-full h-14 text-base rounded-xl border-gray-300/50 bg-white/80 backdrop-blur-sm focus:border-[#1DA1F2] focus:ring-[#1DA1F2]/30 focus:bg-white">
-                        <SelectValue placeholder="(Payroll / Tokenization / Spending)" />
+                      <SelectTrigger 
+                        className="w-full h-14 text-base rounded-xl border-gray-300/50 bg-white/80 backdrop-blur-sm focus:border-[#1DA1F2] focus:ring-[#1DA1F2]/30 focus:bg-white"
+                        aria-label="Service type"
+                      >
+                        <SelectValue placeholder="Select a service" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
                         <SelectItem value="Payroll" className="rounded-lg">
@@ -351,12 +357,13 @@ export function VerificationModal({ isOpen, onClose }: VerificationModalProps) {
               <div className="space-y-8 pt-6">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-6">
-                    Provide Brief Discription
+                    Provide Brief Description
                   </h3>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                       <Textarea
-                        placeholder="(Type discription here)"
+                        placeholder="Provide a brief description of your request"
+                        aria-label="Description"
                         value={formData.description}
                         onChange={(e) =>
                           setFormData({
@@ -397,7 +404,7 @@ export function VerificationModal({ isOpen, onClose }: VerificationModalProps) {
                         </>
                       ) : (
                         <>
-                          (SUBMIT YOUR ENTRY)
+                          Submit Your Entry
                           <svg className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                           </svg>

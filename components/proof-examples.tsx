@@ -2,41 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
-
-const proofExamples = [
-  {
-    id: 1,
-    title: "Miami Beachfront Trust",
-    value: "$25M",
-    description: "Richard's private beach house trust for family and friends worth 25m",
-    image: "/images/miami-beachfront.jpg",
-    icon: "home",
-  },
-  {
-    id: 2,
-    title: "Satoshi Nakamoto's Will",
-    value: "1,500 BTC",
-    description: "Left behind 1500 BTC for wallets 0x7a9...0x3f2...",
-    image: "/images/satoshi-will.jpg",
-    icon: "scroll",
-  },
-  {
-    id: 3,
-    title: "OpenSea Employee Payroll",
-    value: "$1.2M/mo",
-    description: "Payroll Processing for 340 employees, 1.2m/mo",
-    image: "/images/opensea-payroll.jpg",
-    icon: "users",
-  },
-  {
-    id: 4,
-    title: "Pudgy Penguins Treasury",
-    value: "$104M",
-    description: "$104M in assets collected by Luca Netz held and $PROOF'd",
-    image: "/images/pudgy-treasury.jpg",
-    icon: "vault",
-  },
-]
+import { useProofs } from '@/hooks/use-proofs'
 
 function ProofIcon({ type }: { type: string }) {
   switch (type) {
@@ -72,6 +38,9 @@ function ProofIcon({ type }: { type: string }) {
 export function ProofExamples() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { data, loading } = useProofs({ featured: true, limit: 4 })
+
+  const proofExamples = data?.proofs || []
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -83,6 +52,26 @@ export function ProofExamples() {
     }
   }
 
+  if (loading) {
+    return (
+      <section className="py-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl text-center mb-8">
+            <span className="text-gray-900">Get </span>
+            <span className="text-[var(--proof-primary)]">PROOF&apos;D</span>
+          </h2>
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--proof-primary)]"></div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (proofExamples.length === 0) {
+    return null
+  }
+
   return (
     <section className="py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
@@ -90,7 +79,7 @@ export function ProofExamples() {
         <div className="relative mb-8 flex items-center">
           <h2 className="w-full text-center text-3xl font-bold text-gray-900 md:text-4xl">
             <span className="text-gray-900">Get </span>
-            <span className="text-[#1DA1F2]">PROOF`D</span>
+            <span className="text-[var(--proof-primary)]">PROOF&apos;D</span>
           </h2>
           
           {/* Navigation arrows */}
@@ -134,19 +123,24 @@ export function ProofExamples() {
             >
               <div className="relative h-[420px] rounded-3xl overflow-hidden bg-white border border-transparent shadow-none transition-all duration-300 hover:scale-[1.02]">
                 {/* Background image */}
-                <Image
-                  src={proof.image || "/placeholder.svg"}
-                  alt={proof.title}
-                  fill
-                  className="object-cover"
-                />
+                {proof.image_url && (
+                  <Image
+                    src={proof.image_url}
+                    alt={proof.campaign_name}
+                    fill
+                    className="object-cover"
+                  />
+                )}
                 
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                 
-                {/* Icon badge */}
+                {/* Platform badge */}
                 <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-                  <ProofIcon type={proof.icon} />
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <path d="M12 3l9 4.5v9L12 21l-9-4.5v-9L12 3z" stroke="white" strokeWidth="2" fill="none"/>
+                  </svg>
                 </div>
                 
                 {/* Verified badge */}
@@ -158,19 +152,19 @@ export function ProofExamples() {
                 {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   {/* Value badge */}
-                  <div className="inline-flex items-center gap-2 bg-[#1DA1F2]/20 backdrop-blur-md rounded-full px-3 py-1 mb-3">
-                    <span className="text-[#1DA1F2] text-sm font-bold">{proof.value}</span>
+                  <div className="inline-flex items-center gap-2 bg-[var(--proof-primary)]/20 backdrop-blur-md rounded-full px-3 py-1 mb-3">
+                    <span className="text-[var(--proof-primary)] text-sm font-bold">${proof.amount}</span>
                   </div>
                   
                   <h3 className="text-xl font-bold text-white mb-2">
-                    {proof.title}
+                    {proof.campaign_name}
                   </h3>
                   <p className="text-white/70 text-sm leading-relaxed mb-4">
-                    {proof.description}
+                    {proof.recipient} via {proof.platform?.name}
                   </p>
                   
                   {/* View proof link */}
-                  <div className="flex items-center gap-2 text-[#1DA1F2] text-sm font-medium group-hover:gap-3 transition-all">
+                  <div className="flex items-center gap-2 text-[var(--proof-primary)] text-sm font-medium group-hover:gap-3 transition-all">
                     <span>View on-chain proof</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -189,7 +183,7 @@ export function ProofExamples() {
           <button
             key={index}
             className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex ? 'w-6 bg-[#1DA1F2]' : 'bg-gray-300'
+              index === currentIndex ? 'w-6 bg-[var(--proof-primary)]' : 'bg-gray-300'
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

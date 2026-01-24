@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PlatformTicker } from './platform-ticker'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import proofsLogo from '../Proofslogotransparent.png'
 
 const rotatingWords = [
@@ -18,9 +19,11 @@ const rotatingWords = [
 export function Hero() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [animationState, setAnimationState] = useState<'enter' | 'exit'>('enter')
-  const [isVisible, setIsVisible] = useState(true); // Declare isVisible variable
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
+    if (prefersReducedMotion) return
+
     const interval = setInterval(() => {
       setAnimationState('exit')
       
@@ -31,7 +34,7 @@ export function Hero() {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [prefersReducedMotion])
 
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-24 pb-12">
@@ -39,7 +42,7 @@ export function Hero() {
       <div 
         className="pointer-events-none absolute inset-0 z-0"
         style={{
-          background: 'radial-gradient(ellipse 80% 50% at 50% 30%, rgba(29, 161, 242, 0.12) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse 80% 50% at 50% 30%, var(--proof-primary-glow) 0%, transparent 60%)',
         }}
         aria-hidden="true"
       />
@@ -53,7 +56,7 @@ export function Hero() {
             alt="Payment Proofs Verification Badge"
             width={120}
             height={120}
-            className="h-28 w-28 drop-shadow-[0_0_30px_rgba(29,161,242,0.4)] sm:h-32 sm:w-32 animate-spin-y"
+            className={`h-28 w-28 drop-shadow-[0_0_30px_var(--proof-primary-glow)] sm:h-32 sm:w-32 ${prefersReducedMotion ? '' : 'animate-spin-y'}`}
             priority
           />
         </div>
@@ -62,8 +65,8 @@ export function Hero() {
         <h1 className="mb-6 flex flex-col items-center justify-center gap-2 py-1 text-4xl font-bold leading-[1.15] tracking-tight text-gray-900 sm:flex-row sm:gap-3 sm:text-5xl md:text-6xl lg:text-7xl">
           <span className="font-[family-name:var(--font-montserrat)]" style={{ fontWeight: 900, letterSpacing: '-0.02em' }}>PROOF:</span>
           <span 
-            className="block min-w-0 py-1 leading-[1.15] bg-gradient-to-r from-[#1DA1F2] to-[#4ECDC4] bg-clip-text text-3xl font-bold text-transparent sm:min-w-[450px] sm:text-4xl md:text-5xl lg:text-6xl"
-            style={{ 
+            className="block min-w-0 py-1 leading-[1.15] bg-gradient-to-r from-[var(--proof-primary)] to-[var(--proof-accent)] bg-clip-text text-3xl font-bold text-transparent sm:min-w-[450px] sm:text-4xl md:text-5xl lg:text-6xl"
+            style={prefersReducedMotion ? undefined : { 
               transform: animationState === 'enter' ? 'scale(1) translateZ(0)' : 'scale(0.5) translateZ(-100px)',
               opacity: animationState === 'enter' ? 1 : 0,
               filter: animationState === 'enter' ? 'blur(0px)' : 'blur(10px)',
@@ -87,7 +90,7 @@ export function Hero() {
         <div className="mb-16 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             href="#buy"
-            className="group flex h-14 items-center gap-3 rounded-full bg-[#1DA1F2] px-10 text-lg font-semibold text-white transition-all hover:bg-[#1a8cd8] hover:shadow-xl hover:shadow-[#1DA1F2]/30"
+            className="group flex h-14 items-center gap-3 rounded-full bg-[var(--proof-primary)] px-10 text-lg font-semibold text-white transition-all hover:bg-[var(--proof-primary-hover)] hover:shadow-xl hover:shadow-[var(--proof-primary)]/30"
           >
             Buy $PROOF
             <svg 

@@ -4,6 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Brand Colors */
+  --proof-primary: #1DA1F2;
+  --proof-primary-hover: #1a8cd8;
+  --proof-primary-dark: #0d8ecf;
+  --proof-primary-glow: rgba(29, 161, 242, 0.12);
+  --proof-accent: #4ECDC4;
+  --proof-success: #00c853;
+  --proof-warning: #ff9800;
+  --proof-error: #ff424d;
+  
+  /* Theme Colors (existing for compatibility) */
   --background: #bfdbfe;
   --foreground: #1f2937;
   --card: oklch(0.12 0.02 250);
@@ -37,6 +48,19 @@
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.25 0.02 250);
   --sidebar-ring: oklch(0.65 0.19 230);
+  
+  /* Spacing based on 8px grid */
+  --spacing-1: 8px;
+  --spacing-2: 16px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-8: 64px;
+  --spacing-10: 80px;
+  --spacing-12: 96px;
+  --spacing-16: 128px;
+  --spacing-20: 160px;
 }
 
 @theme inline {
@@ -89,7 +113,33 @@
   }
 }
 
-/* Custom Animations */
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-spin-y,
+  .animate-float-1,
+  .animate-float-2,
+  .animate-float-3,
+  .animate-float-4,
+  .animate-float-5,
+  .animate-pulse-glow,
+  .animate-twinkle,
+  .animate-ticker,
+  .animate-ping,
+  .animate-pulse {
+    animation: none !important;
+  }
+}
+
+/* Custom Animations (respect reduced motion) */
 @keyframes float-1 {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
   25% { transform: translate(10px, -15px) rotate(3deg); }
@@ -126,7 +176,7 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(29, 161, 242, 0.3); }
+  0%, 100% { box-shadow: 0 0 20px var(--proof-primary-glow); }
   50% { box-shadow: 0 0 40px rgba(29, 161, 242, 0.6); }
 }
 
@@ -173,4 +223,17 @@
 .animate-spin-y {
   animation: spin-y 6s cubic-bezier(0.23, 1, 0.32, 1) infinite;
   transform-style: preserve-3d;
+}
+
+/* Utility classes for semantic HTML */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

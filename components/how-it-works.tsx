@@ -1,10 +1,10 @@
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="relative px-6 py-32 overflow-hidden">
+    <section id="how-it-works" className="relative px-6 py-32 overflow-hidden" aria-labelledby="how-it-works-title">
       {/* Section header */}
       <div className="mx-auto max-w-7xl">
         <div className="mb-20 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
+          <h2 id="how-it-works-title" className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
             The Flow
           </h2>
           <p className="mx-auto max-w-xl text-lg text-gray-500">

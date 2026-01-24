@@ -6,12 +6,12 @@ export function CTASection() {
   return (
     <section id="buy" className="relative px-6 py-24">
       <div className="mx-auto max-w-4xl">
-        <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-gradient-to-br from-[#1DA1F2]/10 via-white to-[#4ECDC4]/10 p-8 text-center lg:p-16 shadow-lg">
+        <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-gradient-to-br from-[var(--proof-primary)]/10 via-white to-[var(--proof-accent)]/10 p-8 text-center lg:p-16 shadow-lg">
           {/* Background glow */}
           <div 
             className="pointer-events-none absolute inset-0"
             style={{
-              background: 'radial-gradient(circle at 50% 30%, rgba(29, 161, 242, 0.15) 0%, transparent 50%)',
+              background: 'radial-gradient(circle at 50% 30%, var(--proof-primary-glow) 0%, transparent 50%)',
             }}
             aria-hidden="true"
           />
@@ -39,7 +39,7 @@ export function CTASection() {
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="#"
-                className="group flex h-14 items-center gap-3 rounded-full bg-[#1DA1F2] px-10 text-lg font-semibold text-white transition-all hover:bg-[#1a8cd8] hover:shadow-xl hover:shadow-[#1DA1F2]/30"
+                className="group flex h-14 items-center gap-3 rounded-full bg-[var(--proof-primary)] px-10 text-lg font-semibold text-white transition-all hover:bg-[var(--proof-primary-hover)] hover:shadow-xl hover:shadow-[var(--proof-primary)]/30"
               >
                 Buy $PROOF
                 <svg 

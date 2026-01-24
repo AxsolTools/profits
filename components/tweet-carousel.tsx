@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { useProofs } from "@/hooks/use-proofs";
 
 const verifiedTweets = [
   {
@@ -429,13 +431,19 @@ function ExpandedTweetModal({
 export function TweetCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedTweet, setSelectedTweet] = useState<Tweet | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const { data } = useProofs({ status: 'verified', limit: 8 });
+
+  const tweets = data?.proofs || verifiedTweets;
 
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % verifiedTweets.length);
+      setCurrentIndex((prev) => (prev + 1) % tweets.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [prefersReducedMotion, tweets.length]);
 
   const handleTweetClick = useCallback((tweet: Tweet) => {
     setSelectedTweet(tweet);
@@ -447,7 +455,7 @@ export function TweetCarousel() {
         <div className="text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Public Proof on{" "}
-            <span className="text-[#1DA1F2]">X</span>
+            <span className="text-[var(--proof-primary)]">X</span>
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Every payment is automatically posted to X for full transparency. 
@@ -464,10 +472,10 @@ export function TweetCarousel() {
 
         {/* Tweet Track */}
         <div 
-          className="flex gap-6 transition-transform duration-700 ease-out px-[calc(50%-170px)]"
-          style={{ transform: `translateX(calc(-${currentIndex * 364}px))` }}
+          className={`flex gap-6 px-[calc(50%-170px)] ${prefersReducedMotion ? '' : 'transition-transform duration-700 ease-out'}`}
+          style={prefersReducedMotion ? undefined : { transform: `translateX(calc(-${currentIndex * 364}px))` }}
         >
-          {verifiedTweets.map((tweet, index) => (
+          {tweets.map((tweet, index) => (
             <TweetCard 
               key={tweet.id} 
               tweet={tweet} 
@@ -479,14 +487,14 @@ export function TweetCarousel() {
 
         {/* Navigation Dots */}
         <div className="flex justify-center gap-2 mt-8">
-          {verifiedTweets.map((_, index) => (
+          {tweets.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`
                 w-2 h-2 rounded-full transition-all duration-300
                 ${index === currentIndex 
-                  ? "w-8 bg-[#1DA1F2]" 
+                  ? "w-8 bg-[var(--proof-primary)]" 
                   : "bg-gray-300 hover:bg-gray-400"
                 }
               `}
@@ -508,7 +516,7 @@ export function TweetCarousel() {
             <div className="text-gray-500 text-sm">Total Verified</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-[#1DA1F2] mb-1">100%</div>
+            <div className="text-3xl font-bold text-[var(--proof-primary)] mb-1">100%</div>
             <div className="text-gray-500 text-sm">On-Chain Proof</div>
           </div>
         </div>

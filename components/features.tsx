@@ -13,7 +13,7 @@ import proofsLogo from '../Proofslogotransparent.png';
 
 export function Features() {
   return (
-    <section id="features" className="relative px-6 py-32 overflow-hidden">
+    <section id="features" className="relative px-6 py-32 overflow-hidden" aria-labelledby="features-title">
       {/* Ambient glow */}
       <div 
         className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] opacity-30"
@@ -53,7 +53,7 @@ export function Features() {
                     </svg>
                     <span className="text-sm font-semibold tracking-wide">CORE TECHNOLOGY</span>
                   </div>
-                  <h3 className="mb-4 text-3xl font-bold text-gray-900 lg:text-4xl">
+                  <h3 id="features-title" className="mb-4 text-3xl font-bold text-gray-900 lg:text-4xl">
                     On-Chain Verification
                   </h3>
                   <p className="max-w-md text-lg text-gray-600 leading-relaxed">

@@ -1,11 +1,15 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 export function Starfield() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
+    if (prefersReducedMotion) return
+    
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -59,7 +63,7 @@ export function Starfield() {
       window.removeEventListener('resize', resizeCanvas)
       cancelAnimationFrame(animationId)
     }
-  }, [])
+  }, [prefersReducedMotion])
 
   return (
     <canvas
