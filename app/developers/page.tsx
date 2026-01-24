@@ -46,8 +46,10 @@ export default function DevelopersPage() {
              </div>
              <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise API Access</h3>
              <p className="text-gray-600 max-w-sm mb-6">We are currently onboarding select partners. Join the waitlist to get early access to our developer tools.</p>
-             <Button className="bg-[var(--proof-primary)] hover:bg-[var(--proof-primary-hover)] text-white font-bold px-8 pointer-events-auto cursor-pointer shadow-lg shadow-blue-500/20">
-               Join Waitlist
+             <Button asChild className="bg-[var(--proof-primary)] hover:bg-[var(--proof-primary-hover)] text-white font-bold px-8 pointer-events-auto cursor-pointer shadow-lg shadow-blue-500/20">
+               <a href="mailto:Support@Gotproof.xyz?subject=Enterprise%20API%20Access%20Request&body=Hello%20Proof%20Team%2C%0D%0A%0D%0AI%20am%20interested%20in%20joining%20the%20Enterprise%20API%20waitlist.%0D%0A%0D%0ACompany%3A%20%0D%0AWebsite%3A%20%0D%0AUse%20Case%3A%20%0D%0A%0D%0AThank%20you%21">
+                 Join Waitlist
+               </a>
              </Button>
            </div>
         </div>
