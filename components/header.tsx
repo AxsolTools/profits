@@ -3,12 +3,9 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { VerificationModal } from './verification-modal'
 import proofsLogo from '../Proofslogotransparent.png'
 
 export function Header() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
@@ -30,6 +27,14 @@ export function Header() {
           </Link>
           
           <div className="flex items-center gap-3">
+            {/* Dashboard Link */}
+            <Link
+              href="/dashboard"
+              className="hidden text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 md:block"
+            >
+              Dashboard
+            </Link>
+
             {/* Docs Link */}
             <Link
               href="https://docs.gotproof.xyz"
@@ -40,20 +45,17 @@ export function Header() {
               Docs
             </Link>
 
-            {/* Start Verifying Button */}
-            <button
-              onClick={() => setIsModalOpen(true)}
+            {/* Launch App Button */}
+            <Link
+              href="/create"
               className="hidden sm:flex h-10 items-center gap-2 rounded-full bg-[var(--proof-primary)] px-5 text-sm font-semibold text-white transition-all hover:bg-[var(--proof-primary-hover)] hover:shadow-lg hover:shadow-[var(--proof-primary)]/25"
-              aria-label="Start verifying payments"
+              aria-label="Launch application"
             >
+              <span>Launch App</span>
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
-              <span>Start Verifying</span>
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+            </Link>
             
             {/* X/Twitter Link */}
             <Link
@@ -78,11 +80,6 @@ export function Header() {
           </div>
         </nav>
       </header>
-      
-      <VerificationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
     </>
   )
 }
