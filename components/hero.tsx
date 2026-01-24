@@ -31,17 +31,6 @@ export function Hero() {
         />
       </div>
 
-      {/* Massive Background Logo - The "Monolith" */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] opacity-[0.03] animate-pulse pointer-events-none select-none z-0">
-        <Image
-          src={proofsLogo}
-          alt="PROOF Background Monolith"
-          fill
-          className="object-contain"
-          priority
-        />
-      </div>
-      
       {/* Content Layer - Z-index 10 ensures clicks work */}
       <div className="relative z-10 max-w-5xl mx-auto text-center space-y-8">
         
