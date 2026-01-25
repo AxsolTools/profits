@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { StreamflowSolana, Types, getBN } from '@streamflow/stream'
+import BN from 'bn.js'
 
 type Category = 
   | 'goods' 
@@ -27,9 +29,41 @@ const categories = [
   { id: 'otc', name: 'OTC Trade', icon: '💱', desc: 'P2P Token Swaps' },
 ]
 
+const inspectionPresets: Record<string, number> = {
+  '24h': 24 * 60 * 60,
+  '48h': 48 * 60 * 60,
+  '72h': 72 * 60 * 60,
+  '7d': 7 * 24 * 60 * 60,
+}
+
+function parseInspectionPeriod(value: string) {
+  return inspectionPresets[value] || 24 * 60 * 60
+}
+
+function getCurrencyConfig(currency: string) {
+  const usdcMint = process.env.NEXT_PUBLIC_USDC_MINT
+  const usdtMint = process.env.NEXT_PUBLIC_USDT_MINT
+  const wsolMint = process.env.NEXT_PUBLIC_WSOL_MINT
+
+  if (currency === 'USDC') {
+    if (!usdcMint) throw new Error('USDC mint not configured.')
+    return { mint: usdcMint, decimals: Number(process.env.NEXT_PUBLIC_USDC_DECIMALS || 6), isNative: false }
+  }
+  if (currency === 'USDT') {
+    if (!usdtMint) throw new Error('USDT mint not configured.')
+    return { mint: usdtMint, decimals: Number(process.env.NEXT_PUBLIC_USDT_DECIMALS || 6), isNative: false }
+  }
+  if (currency === 'SOL') {
+    if (!wsolMint) throw new Error('wSOL mint not configured for SOL escrow.')
+    return { mint: wsolMint, decimals: 9, isNative: true }
+  }
+
+  throw new Error('Unsupported currency.')
+}
+
 export function CreateTransactionForm() {
   const router = useRouter()
-  const { publicKey } = useWallet()
+  const { publicKey, wallet } = useWallet()
   const [step, setStep] = useState<Step>('category')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -75,6 +109,9 @@ export function CreateTransactionForm() {
       if (!formData.sellerWallet || !formData.amount || !formData.category || !formData.description) {
         throw new Error('Please complete all required fields.')
       }
+      if (!wallet?.adapter) {
+        throw new Error('Wallet adapter not available for signing.')
+      }
 
       const metadata: Record<string, unknown> = {}
       if (formData.shippingCarrier) metadata.shippingCarrier = formData.shippingCarrier
@@ -95,6 +132,44 @@ export function CreateTransactionForm() {
           }))
       }
 
+      const { mint, decimals, isNative } = getCurrencyConfig(formData.currency)
+      const totalAmount = getBN(Number(formData.amount), decimals)
+      const minimalUnit = new BN(1)
+      const cliffAmount = totalAmount.lte(minimalUnit) ? totalAmount : totalAmount.subn(1)
+      const amountPerPeriod = totalAmount.lte(minimalUnit) ? new BN(0) : minimalUnit
+
+      const now = Math.floor(Date.now() / 1000)
+      const cliffTime = now + parseInspectionPeriod(formData.inspectionPeriod)
+
+      const client = new StreamflowSolana.SolanaStreamClient(
+        process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com'
+      )
+
+      const createParams: Types.ICreateStreamData = {
+        recipient: formData.sellerWallet,
+        tokenId: mint,
+        start: cliffTime,
+        amount: totalAmount,
+        period: 1,
+        cliff: cliffTime,
+        cliffAmount,
+        amountPerPeriod,
+        name: formData.description,
+        canTopup: false,
+        automaticWithdrawal: false,
+        cancelableBySender: false,
+        cancelableByRecipient: false,
+        transferableBySender: false,
+        transferableByRecipient: false,
+      }
+
+      const { metadataId, txId } = await client.create(createParams, {
+        sender: wallet.adapter,
+        isNative,
+      })
+
+      metadata.streamflowTxId = txId
+
       const response = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,6 +181,7 @@ export function CreateTransactionForm() {
           category: formData.category,
           title: formData.description,
           metadata,
+          streamflowId: metadataId,
         }),
       })
 

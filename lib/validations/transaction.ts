@@ -9,6 +9,7 @@ export const createTransactionSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   title: z.string().min(1, 'Title is required'),
   metadata: z.record(z.any()).optional(),
+  streamflowId: z.string().min(1, 'Streamflow stream id is required'),
 })
 
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>

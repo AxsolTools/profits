@@ -3,7 +3,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createTransactionSchema } from '@/lib/validations/transaction'
 import { getSessionWallet } from '@/lib/auth/session'
 import { getOrCreateProfileId } from '@/lib/auth/profile'
-import { createStreamflowEscrow } from '@/lib/integrations/streamflow'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,18 +20,6 @@ export async function POST(request: NextRequest) {
 
     await getOrCreateProfileId(sessionWallet)
 
-    const streamflowResponse = await createStreamflowEscrow({
-      buyerWallet: validatedData.buyerWallet,
-      sellerWallet: validatedData.sellerWallet,
-      amount: validatedData.amount,
-      currency: validatedData.currency,
-      metadata: {
-        proofId: validatedData.proofId || null,
-        category: validatedData.category,
-        title: validatedData.title,
-        ...validatedData.metadata,
-      },
-    })
 
     const { data, error } = await supabase
       .from('transactions')
@@ -45,8 +32,8 @@ export async function POST(request: NextRequest) {
         category: validatedData.category,
         title: validatedData.title,
         metadata: validatedData.metadata || null,
-        escrow_status: streamflowResponse.status || 'locked',
-        streamflow_id: streamflowResponse.id,
+        escrow_status: 'locked',
+        streamflow_id: validatedData.streamflowId,
       })
       .select()
       .single()
