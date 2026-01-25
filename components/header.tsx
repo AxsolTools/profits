@@ -6,7 +6,6 @@ import Link from 'next/link'
 import proofsLogo from '../Proofslogotransparent.png'
 import { Button } from '@/components/ui/button'
 import { WalletButton } from '@/components/wallet-button'
-import { ThemeToggle } from '@/components/theme-toggle'
 
 export function Header() {
   return (
@@ -53,12 +52,11 @@ export function Header() {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex-1 flex justify-end items-center gap-4">
+        <div className="flex-1 flex justify-end items-center gap-6">
           <Link href="https://docs.gotproof.xyz" target="_blank" className="hidden xl:block text-base font-bold text-gray-500 hover:text-gray-900 transition-colors">
             Docs
           </Link>
           
-          <ThemeToggle />
           <WalletButton />
           <Link href="/create">
             <Button className="h-12 px-8 rounded-full bg-gray-900 hover:bg-black text-white text-base font-bold shadow-lg shadow-gray-200 hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
