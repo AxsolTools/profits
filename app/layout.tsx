@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Montserrat } from 'next/font/google'
+import '@solana/wallet-adapter-react-ui/styles.css'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { GlobalBackground } from '@/components/global-background'
