@@ -46,6 +46,13 @@ export default function GovernancePage() {
     activeTab === 'proposals' ? dispute.status === 'voting' : dispute.status === 'resolved'
   )
 
+  const activeCount = disputes.filter((dispute) => dispute.status === 'voting').length
+  const resolvedCount = disputes.filter((dispute) => dispute.status === 'resolved').length
+  const resolvedVolume = disputes
+    .filter((dispute) => dispute.status === 'resolved')
+    .reduce((sum, dispute) => sum + Number(dispute.transactions?.amount || 0), 0)
+  const feePool = resolvedVolume * 0.1
+
   const formatTimeLeft = (createdAt: string) => {
     const end = new Date(createdAt).getTime() + 72 * 60 * 60 * 1000
     const diff = end - Date.now()
@@ -61,7 +68,7 @@ export default function GovernancePage() {
       <div className="bg-blue-50 border border-blue-100 px-4 py-3 rounded-lg flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">TESTNET</span>
-          <p className="text-sm text-blue-900 font-medium">Governance actions will settle on Solana Devnet.</p>
+          <p className="text-sm text-blue-900 font-medium">Governance preview on Solana Devnet.</p>
         </div>
         <Button variant="ghost" size="sm" className="h-auto py-1 text-blue-700 hover:text-blue-900 text-xs font-bold" onClick={handleDelegate}>
           Delegate Votes →
@@ -72,22 +79,25 @@ export default function GovernancePage() {
         {/* Left Column: Stats */}
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">My Voting Power</p>
-            <p className="text-3xl font-black text-gray-900 mb-2">42,050 <span className="text-sm text-gray-400 font-bold">vPROOF</span></p>
-            <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
-              <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '75%' }} />
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Governance Overview</p>
+            <p className="text-3xl font-black text-gray-900 mb-2">{activeCount}</p>
+            <p className="text-sm text-gray-600">Active disputes in voting</p>
+            <div className="mt-4 text-xs text-gray-500">
+              {resolvedCount} resolved • ${resolvedVolume.toFixed(2)} settled
             </div>
-            <p className="text-xs text-gray-500">Top 5% of voters</p>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex justify-between items-center mb-4">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Rewards</p>
-              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">Ready to Claim</span>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Dispute Fee Pool</p>
+              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Protocol</span>
             </div>
-            <p className="text-3xl font-black text-gray-900 mb-4">$1,240.50</p>
-            <Button className="w-full h-10 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded-lg">
-              Claim Yield
+            <p className="text-3xl font-black text-gray-900 mb-2">${feePool.toFixed(2)}</p>
+            <p className="text-sm text-gray-600 mb-4">
+              Voters earn the 10% fee when they align with the final decision.
+            </p>
+            <Button className="w-full h-10 bg-gray-900 hover:bg-black text-white font-bold text-sm rounded-lg">
+              View Voting Rewards
             </Button>
           </div>
         </div>
@@ -121,9 +131,13 @@ export default function GovernancePage() {
             {loading ? (
               <div className="p-6 text-sm text-gray-500">Loading disputes...</div>
             ) : error ? (
-              <div className="p-6 text-sm text-red-600">{error}</div>
+              <div className="p-6 text-sm text-gray-600">
+                Governance data is unavailable right now. Connect your wallet and verify to load live disputes.
+              </div>
             ) : filteredDisputes.length === 0 ? (
-              <div className="p-6 text-sm text-gray-500">No disputes available.</div>
+              <div className="p-6 text-sm text-gray-500">
+                {activeTab === 'proposals' ? 'No active disputes in voting.' : 'No resolved disputes yet.'}
+              </div>
             ) : (
               <div className="divide-y divide-gray-100">
                 {filteredDisputes.map((prop) => {
