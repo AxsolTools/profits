@@ -40,21 +40,30 @@ function parseInspectionPeriod(value: string) {
   return inspectionPresets[value] || 24 * 60 * 60
 }
 
+const DEFAULT_USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+const DEFAULT_USDT_MINT = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
+const DEFAULT_WSOL_MINT = 'So11111111111111111111111111111111111111112'
+
 function getCurrencyConfig(currency: string) {
-  const usdcMint = process.env.NEXT_PUBLIC_USDC_MINT
-  const usdtMint = process.env.NEXT_PUBLIC_USDT_MINT
-  const wsolMint = process.env.NEXT_PUBLIC_WSOL_MINT
+  const usdcMint = process.env.NEXT_PUBLIC_USDC_MINT || DEFAULT_USDC_MINT
+  const usdtMint = process.env.NEXT_PUBLIC_USDT_MINT || DEFAULT_USDT_MINT
+  const wsolMint = process.env.NEXT_PUBLIC_WSOL_MINT || DEFAULT_WSOL_MINT
 
   if (currency === 'USDC') {
-    if (!usdcMint) throw new Error('USDC mint not configured.')
-    return { mint: usdcMint, decimals: Number(process.env.NEXT_PUBLIC_USDC_DECIMALS || 6), isNative: false }
+    return {
+      mint: usdcMint,
+      decimals: Number(process.env.NEXT_PUBLIC_USDC_DECIMALS || 6),
+      isNative: false
+    }
   }
   if (currency === 'USDT') {
-    if (!usdtMint) throw new Error('USDT mint not configured.')
-    return { mint: usdtMint, decimals: Number(process.env.NEXT_PUBLIC_USDT_DECIMALS || 6), isNative: false }
+    return {
+      mint: usdtMint,
+      decimals: Number(process.env.NEXT_PUBLIC_USDT_DECIMALS || 6),
+      isNative: false
+    }
   }
   if (currency === 'SOL') {
-    if (!wsolMint) throw new Error('wSOL mint not configured for SOL escrow.')
     return { mint: wsolMint, decimals: 9, isNative: true }
   }
 
