@@ -80,6 +80,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@remotion/cli": "^4.0.409",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/react": "^19",
