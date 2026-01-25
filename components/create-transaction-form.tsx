@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 type Category = 
   | 'goods' 
@@ -29,9 +29,10 @@ const categories = [
 
 export function CreateTransactionForm() {
   const router = useRouter()
+  const { publicKey } = useWallet()
   const [step, setStep] = useState<Step>('category')
   const [loading, setLoading] = useState(false)
-  const prefersReducedMotion = useReducedMotion()
+  const [error, setError] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     category: '' as Category,
@@ -43,22 +44,80 @@ export function CreateTransactionForm() {
     // Dynamic fields
     shippingCarrier: '',
     trackingNumber: '',
+    shippingRequiresSignature: false,
     milestones: [{ title: '', amount: '' }],
     domainName: '',
     inspectionPeriod: '24h',
+    serviceScope: '',
+    revisionPolicy: '',
+    assetType: '',
+    transferMethod: '',
   })
+
+  const walletAddress = publicKey?.toBase58() || ''
+
+  useEffect(() => {
+    if (walletAddress) {
+      setFormData((prev) => ({ ...prev, buyerWallet: walletAddress }))
+    }
+  }, [walletAddress])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (step !== 'review') return
 
     setLoading(true)
+    setError(null)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      if (!walletAddress) {
+        throw new Error('Connect your wallet to create an escrow.')
+      }
+      if (!formData.sellerWallet || !formData.amount || !formData.category || !formData.description) {
+        throw new Error('Please complete all required fields.')
+      }
+
+      const metadata: Record<string, unknown> = {}
+      if (formData.shippingCarrier) metadata.shippingCarrier = formData.shippingCarrier
+      if (formData.trackingNumber) metadata.trackingNumber = formData.trackingNumber
+      if (formData.shippingRequiresSignature) metadata.shippingRequiresSignature = true
+      if (formData.domainName) metadata.domainName = formData.domainName
+      if (formData.inspectionPeriod) metadata.inspectionPeriod = formData.inspectionPeriod
+      if (formData.serviceScope) metadata.serviceScope = formData.serviceScope
+      if (formData.revisionPolicy) metadata.revisionPolicy = formData.revisionPolicy
+      if (formData.assetType) metadata.assetType = formData.assetType
+      if (formData.transferMethod) metadata.transferMethod = formData.transferMethod
+      if (formData.milestones?.length) {
+        metadata.milestones = formData.milestones
+          .filter((milestone) => milestone.title || milestone.amount)
+          .map((milestone) => ({
+            title: milestone.title,
+            amount: milestone.amount ? Number(milestone.amount) : null,
+          }))
+      }
+
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          buyerWallet: walletAddress,
+          sellerWallet: formData.sellerWallet,
+          amount: Number(formData.amount),
+          currency: formData.currency,
+          category: formData.category,
+          title: formData.description,
+          metadata,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to create escrow')
+      }
+
       router.push('/dashboard')
     } catch (error) {
-      console.error(error)
+      const message = error instanceof Error ? error.message : 'Failed to create escrow'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -68,6 +127,29 @@ export function CreateTransactionForm() {
     if (step === 'category') setStep('details')
     else if (step === 'details') setStep('terms')
     else if (step === 'terms') setStep('review')
+  }
+
+  const updateMilestone = (index: number, field: 'title' | 'amount', value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      milestones: prev.milestones.map((milestone, i) =>
+        i === index ? { ...milestone, [field]: value } : milestone
+      ),
+    }))
+  }
+
+  const addMilestone = () => {
+    setFormData((prev) => ({
+      ...prev,
+      milestones: [...prev.milestones, { title: '', amount: '' }],
+    }))
+  }
+
+  const removeMilestone = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      milestones: prev.milestones.filter((_, i) => i !== index),
+    }))
   }
 
   const prevStep = () => {
@@ -207,11 +289,26 @@ export function CreateTransactionForm() {
                       <>
                         <div>
                           <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Shipping Details</label>
-                          <Input placeholder="Carrier (e.g. FedEx, UPS)" className="h-12 bg-white mb-3" />
-                          <Input placeholder="Tracking Number (Optional)" className="h-12 bg-white" />
+                          <Input
+                            placeholder="Carrier (e.g. FedEx, UPS)"
+                            value={formData.shippingCarrier}
+                            onChange={(e) => setFormData({ ...formData, shippingCarrier: e.target.value })}
+                            className="h-12 bg-white mb-3"
+                          />
+                          <Input
+                            placeholder="Tracking Number (Optional)"
+                            value={formData.trackingNumber}
+                            onChange={(e) => setFormData({ ...formData, trackingNumber: e.target.value })}
+                            className="h-12 bg-white"
+                          />
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[var(--proof-primary)]" />
+                          <input
+                            type="checkbox"
+                            checked={formData.shippingRequiresSignature}
+                            onChange={(e) => setFormData({ ...formData, shippingRequiresSignature: e.target.checked })}
+                            className="w-4 h-4 rounded border-gray-300 text-[var(--proof-primary)]"
+                          />
                           Require signature on delivery
                         </div>
                       </>
@@ -221,11 +318,59 @@ export function CreateTransactionForm() {
                       <>
                         <div>
                           <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Scope of Work</label>
-                          <Textarea placeholder="Describe the deliverables..." className="bg-white min-h-[100px]" />
+                          <Textarea
+                            placeholder="Describe the deliverables..."
+                            value={formData.serviceScope}
+                            onChange={(e) => setFormData({ ...formData, serviceScope: e.target.value })}
+                            className="bg-white min-h-[100px]"
+                          />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Revision Policy</label>
-                          <Input placeholder="e.g. 2 rounds of revisions included" className="h-12 bg-white" />
+                          <Input
+                            placeholder="e.g. 2 rounds of revisions included"
+                            value={formData.revisionPolicy}
+                            onChange={(e) => setFormData({ ...formData, revisionPolicy: e.target.value })}
+                            className="h-12 bg-white"
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold text-gray-500 uppercase">Milestones</label>
+                            <button
+                              type="button"
+                              onClick={addMilestone}
+                              className="text-xs font-bold text-[var(--proof-primary)] hover:underline"
+                            >
+                              Add Milestone
+                            </button>
+                          </div>
+                          {formData.milestones.map((milestone, index) => (
+                            <div key={`milestone-${index}`} className="grid grid-cols-5 gap-2 items-center">
+                              <Input
+                                placeholder="Milestone title"
+                                value={milestone.title}
+                                onChange={(e) => updateMilestone(index, 'title', e.target.value)}
+                                className="col-span-3 h-11 bg-white"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Amount"
+                                value={milestone.amount}
+                                onChange={(e) => updateMilestone(index, 'amount', e.target.value)}
+                                className="col-span-2 h-11 bg-white"
+                              />
+                              {formData.milestones.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeMilestone(index)}
+                                  className="text-xs text-red-500 font-bold col-span-5 text-right"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </>
                     )}
@@ -234,11 +379,30 @@ export function CreateTransactionForm() {
                       <>
                         <div>
                           <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Asset Type</label>
-                          <Input placeholder="e.g. Domain Name, Social Handle" className="h-12 bg-white" />
+                          <Input
+                            placeholder="e.g. Domain Name, Social Handle"
+                            value={formData.assetType}
+                            onChange={(e) => setFormData({ ...formData, assetType: e.target.value })}
+                            className="h-12 bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Domain / Asset Identifier</label>
+                          <Input
+                            placeholder="e.g. proof.xyz"
+                            value={formData.domainName}
+                            onChange={(e) => setFormData({ ...formData, domainName: e.target.value })}
+                            className="h-12 bg-white"
+                          />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Transfer Method</label>
-                          <Input placeholder="e.g. Auth Code, Email Change" className="h-12 bg-white" />
+                          <Input
+                            placeholder="e.g. Auth Code, Email Change"
+                            value={formData.transferMethod}
+                            onChange={(e) => setFormData({ ...formData, transferMethod: e.target.value })}
+                            className="h-12 bg-white"
+                          />
                         </div>
                       </>
                     )}
@@ -259,10 +423,11 @@ export function CreateTransactionForm() {
                   <div className="group">
                     <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Buyer (You)</label>
                     <Input
-                      value={formData.buyerWallet}
+                      value={walletAddress || formData.buyerWallet}
                       onChange={(e) => setFormData({ ...formData, buyerWallet: e.target.value })}
-                      placeholder="Solana Wallet Address"
-                      className="h-16 pl-4 rounded-2xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[var(--proof-primary)] transition-all font-mono text-sm"
+                      placeholder="Connect your wallet to auto-fill"
+                      disabled={!!walletAddress}
+                      className="h-16 pl-4 rounded-2xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[var(--proof-primary)] transition-all font-mono text-sm disabled:opacity-70"
                     />
                   </div>
 
@@ -341,6 +506,12 @@ export function CreateTransactionForm() {
               </div>
             )}
           </div>
+
+          {error && (
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              {error}
+            </div>
+          )}
 
           <div className="flex gap-4 mt-8 pt-8 border-t border-gray-100">
             {step !== 'category' && (

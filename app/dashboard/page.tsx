@@ -1,16 +1,52 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000)
-    return () => clearTimeout(timer)
+    let mounted = true
+    async function loadDashboard() {
+      try {
+        setLoading(true)
+        const data = await api.transactions.list({ limit: 20 })
+        if (mounted) {
+          setTransactions(data.transactions || [])
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to load dashboard')
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+    loadDashboard()
+    return () => {
+      mounted = false
+    }
   }, [])
+
+  const stats = useMemo(() => {
+    const totalVolume = transactions.reduce((sum, tx) => sum + Number(tx.amount || 0), 0)
+    const activeEscrows = transactions.filter((tx) => tx.escrow_status === 'locked').length
+    const disputes = transactions.filter((tx) => tx.escrow_status === 'disputed').length
+    const actionItems = transactions.filter((tx) => tx.escrow_status === 'locked').length
+
+    return {
+      totalVolume,
+      activeEscrows,
+      actionItems,
+      disputes,
+    }
+  }, [transactions])
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -27,10 +63,10 @@ export default function DashboardPage() {
 
       {/* Compact Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard label="Total Volume" value="$0.00" loading={loading} />
-        <StatsCard label="Active Escrows" value="0" loading={loading} />
-        <StatsCard label="Action Items" value="0" loading={loading} highlight />
-        <StatsCard label="Disputes" value="0" loading={loading} isWarning />
+        <StatsCard label="Total Volume" value={`$${stats.totalVolume.toFixed(2)}`} loading={loading} />
+        <StatsCard label="Active Escrows" value={stats.activeEscrows.toString()} loading={loading} />
+        <StatsCard label="Action Items" value={stats.actionItems.toString()} loading={loading} highlight />
+        <StatsCard label="Disputes" value={stats.disputes.toString()} loading={loading} isWarning />
       </div>
 
       {/* Transactions Table */}
@@ -50,7 +86,11 @@ export default function DashboardPage() {
                 <div key={i} className="h-12 bg-gray-50 rounded-lg animate-pulse" />
               ))}
             </div>
-          ) : (
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-64 text-center">
+              <p className="text-sm text-red-600 font-medium">{error}</p>
+            </div>
+          ) : transactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
@@ -59,6 +99,23 @@ export default function DashboardPage() {
               <Link href="/create" className="text-blue-600 text-sm font-bold mt-2 hover:underline">
                 Create your first escrow
               </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {transactions.map((tx) => (
+                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50/60 transition-colors">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-gray-900">{tx.title || 'Escrow Transaction'}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">
+                      {tx.category || 'general'} • {tx.escrow_status}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-gray-900">${Number(tx.amount).toFixed(2)}</p>
+                    <p className="text-xs text-gray-400">{tx.currency}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

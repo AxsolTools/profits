@@ -3,6 +3,7 @@ import { Inter, Montserrat } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { GlobalBackground } from '@/components/global-background'
+import { WalletAdapterProvider } from '@/components/wallet-provider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
@@ -26,10 +27,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <GlobalBackground />
-          <div className="relative z-10">
-            {children}
-          </div>
+          <WalletAdapterProvider>
+            <GlobalBackground />
+            <div className="relative z-10">
+              {children}
+            </div>
+          </WalletAdapterProvider>
         </ThemeProvider>
       </body>
     </html>

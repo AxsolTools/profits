@@ -124,6 +124,9 @@ export interface Database {
           currency: string
           streamflow_id: string | null
           escrow_status: 'locked' | 'released' | 'disputed' | 'refunded'
+          category: string | null
+          title: string | null
+          metadata: Json | null
           created_at: string
           updated_at: string
           released_at: string | null
@@ -137,6 +140,9 @@ export interface Database {
           currency?: string
           streamflow_id?: string | null
           escrow_status?: 'locked' | 'released' | 'disputed' | 'refunded'
+          category?: string | null
+          title?: string | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
           released_at?: string | null
@@ -150,6 +156,9 @@ export interface Database {
           currency?: string
           streamflow_id?: string | null
           escrow_status?: 'locked' | 'released' | 'disputed' | 'refunded'
+          category?: string | null
+          title?: string | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
           released_at?: string | null

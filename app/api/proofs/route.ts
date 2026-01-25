@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createProofSchema, getProofsSchema } from '@/lib/validations/proof'
+import { getSessionWallet } from '@/lib/auth/session'
+import { getOrCreateProfileId } from '@/lib/auth/profile'
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,23 +72,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const body = await request.json()
     
     const validatedData = createProofSchema.parse(body)
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    const sessionWallet = await getSessionWallet()
+    if (!sessionWallet) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const profileId = await getOrCreateProfileId(sessionWallet)
 
     const { data, error } = await supabase
       .from('proofs')
       .insert({
-        sender_id: user.id,
+        sender_id: profileId,
         recipient: validatedData.recipient,
         amount: validatedData.amount,
         currency: validatedData.currency,

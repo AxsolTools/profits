@@ -1,23 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { api } from '@/lib/api'
 
 export default function ProfilePage({ params }: { params: { address: string } }) {
-  // Mock data - would come from backend
-  const stats = {
-    totalVolume: '$42,500',
-    successfulTx: 142,
-    disputeRate: '0.8%',
-    memberSince: 'Oct 2024',
-    reputationScore: 98
-  }
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [stats, setStats] = useState({
+    totalVolume: 0,
+    successfulTx: 0,
+    disputeRate: 0,
+  })
+  const [history, setHistory] = useState<any[]>([])
 
-  const history = [
-    { id: 'tx_821', type: 'service', amount: '$1,200', date: '2 days ago', status: 'completed', role: 'Seller' },
-    { id: 'tx_992', type: 'goods', amount: '$450', date: '1 week ago', status: 'completed', role: 'Buyer' },
-    { id: 'tx_104', type: 'digital', amount: '$5,000', date: '3 weeks ago', status: 'disputed', role: 'Seller' },
-  ]
+  useEffect(() => {
+    let mounted = true
+    async function loadProfile() {
+      try {
+        setLoading(true)
+        const data = await api.profiles.get(params.address)
+        if (mounted) {
+          setStats(data.profile)
+          setHistory(data.history || [])
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to load profile')
+        }
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    loadProfile()
+    return () => {
+      mounted = false
+    }
+  }, [params.address])
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -42,7 +61,7 @@ export default function ProfilePage({ params }: { params: { address: string } })
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                     Verified User
                   </span>
-                  <span className="text-gray-500 text-sm font-medium">Joined {stats.memberSince}</span>
+                  <span className="text-gray-500 text-sm font-medium">Active Wallet</span>
                 </div>
               </div>
             </div>
@@ -55,11 +74,13 @@ export default function ProfilePage({ params }: { params: { address: string } })
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-gray-100">
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Reputation Score</p>
-              <p className="text-4xl font-black text-[var(--proof-primary)]">{stats.reputationScore}</p>
+              <p className="text-4xl font-black text-[var(--proof-primary)]">
+                {loading ? '--' : Math.max(10, 100 - Math.round(stats.disputeRate))}
+              </p>
             </div>
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Volume</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalVolume}</p>
+              <p className="text-2xl font-bold text-gray-900">${stats.totalVolume.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Successful Tx</p>
@@ -67,8 +88,8 @@ export default function ProfilePage({ params }: { params: { address: string } })
             </div>
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Dispute Rate</p>
-              <p className={`text-2xl font-bold ${parseFloat(stats.disputeRate) < 1 ? 'text-green-600' : 'text-red-600'}`}>
-                {stats.disputeRate}
+              <p className={`text-2xl font-bold ${stats.disputeRate < 1 ? 'text-green-600' : 'text-red-600'}`}>
+                {stats.disputeRate.toFixed(2)}%
               </p>
             </div>
           </div>
@@ -88,33 +109,44 @@ export default function ProfilePage({ params }: { params: { address: string } })
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
-            <div className="divide-y divide-gray-100">
-              {history.map((tx) => (
-                <div key={tx.id} className="p-6 hover:bg-gray-50 transition-colors flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${
-                      tx.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                    }`}>
-                      {tx.type === 'goods' ? '📦' : tx.type === 'service' ? '💻' : '🌐'}
+            {loading ? (
+              <div className="p-6 text-sm text-gray-500">Loading history...</div>
+            ) : error ? (
+              <div className="p-6 text-sm text-red-600">{error}</div>
+            ) : history.length === 0 ? (
+              <div className="p-6 text-sm text-gray-500">No transactions yet.</div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {history.map((tx) => {
+                  const role = tx.buyer_wallet === params.address ? 'Buyer' : 'Seller'
+                  return (
+                    <div key={tx.id} className="p-6 hover:bg-gray-50 transition-colors flex items-center justify-between group cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${
+                          tx.escrow_status === 'released' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                        }`}>
+                          {tx.category === 'goods' ? '📦' : tx.category === 'services' ? '💻' : '🌐'}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">{tx.title || 'Escrow Transaction'}</p>
+                          <p className="text-xs text-gray-500 font-medium uppercase mt-0.5">
+                            {role} • {tx.category || 'general'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-900">${Number(tx.amount).toFixed(2)}</p>
+                        <span className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
+                          tx.escrow_status === 'released' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {tx.escrow_status}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-900">Escrow #{tx.id.split('_')[1]}</p>
-                      <p className="text-xs text-gray-500 font-medium uppercase mt-0.5">
-                        {tx.role} • {tx.type} • {tx.date}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-gray-900">{tx.amount}</p>
-                    <span className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
-                      tx.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {tx.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  )
+                })}
+              </div>
+            )}
             <div className="p-4 border-t border-gray-100 bg-gray-50 text-center">
               <button className="text-sm font-bold text-[var(--proof-primary)] hover:underline">View All Transactions</button>
             </div>

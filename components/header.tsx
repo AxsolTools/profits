@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import proofsLogo from '../Proofslogotransparent.png'
 import { Button } from '@/components/ui/button'
+import { WalletButton } from '@/components/wallet-button'
 
 export function Header() {
   return (
@@ -56,6 +57,7 @@ export function Header() {
             Docs
           </Link>
           
+          <WalletButton />
           <Link href="/create">
             <Button className="h-12 px-8 rounded-full bg-gray-900 hover:bg-black text-white text-base font-bold shadow-lg shadow-gray-200 hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
               Launch App

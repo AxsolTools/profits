@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { headers } from 'next/headers'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,13 +9,20 @@ export async function POST(request: NextRequest) {
     const signature = headersList.get('x-streamflow-signature')
     const body = await request.text()
 
-    // TODO: Verify webhook signature
-    const secret = process.env.WEBHOOK_SECRET
+    const secret = process.env.STREAMFLOW_WEBHOOK_SECRET
     if (!signature || !secret) {
-      return NextResponse.json(
-        { error: 'Invalid webhook signature' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 })
+    }
+
+    const expected = createHmac('sha256', secret).update(body).digest('hex')
+    const signatureBuffer = Buffer.from(signature, 'hex')
+    const expectedBuffer = Buffer.from(expected, 'hex')
+
+    if (
+      signatureBuffer.length !== expectedBuffer.length ||
+      !timingSafeEqual(signatureBuffer, expectedBuffer)
+    ) {
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 })
     }
 
     const payload = JSON.parse(body)

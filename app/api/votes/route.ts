@@ -1,26 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { voteSchema } from '@/lib/validations/dispute'
+import { getSessionWallet } from '@/lib/auth/session'
+import { getOrCreateProfileId } from '@/lib/auth/profile'
+import { getTokenBalance } from '@/lib/integrations/solana'
+import { recordRealmsVote } from '@/lib/integrations/realms'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const body = await request.json()
     
     const validatedData = voteSchema.parse(body)
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    const sessionWallet = await getSessionWallet()
+    if (!sessionWallet) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    if (validatedData.voterWallet !== sessionWallet) {
+      return NextResponse.json({ error: 'Voter wallet mismatch' }, { status: 403 })
+    }
+
+    await getOrCreateProfileId(sessionWallet)
 
     // Verify dispute exists and is in voting status
     const { data: dispute } = await supabase
       .from('disputes')
-      .select('id, status')
+      .select('id, status, realms_proposal_id')
       .eq('id', validatedData.disputeId)
       .single()
 
@@ -46,8 +51,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Verify token holdings with Realms/Solana
-    // const hasTokens = await verifyTokenHoldings(validatedData.voterWallet, validatedData.tokenAmount)
+    const tokenMint = process.env.NEXT_PUBLIC_PROOF_TOKEN_MINT
+    if (!tokenMint) {
+      return NextResponse.json({ error: 'Token mint not configured' }, { status: 500 })
+    }
+
+    const balance = await getTokenBalance(sessionWallet, tokenMint)
+    if (balance < validatedData.tokenAmount) {
+      return NextResponse.json({ error: 'Insufficient voting power' }, { status: 403 })
+    }
+
+    if (!dispute.realms_proposal_id) {
+      return NextResponse.json({ error: 'Dispute is missing governance proposal' }, { status: 409 })
+    }
+
+    await recordRealmsVote({
+      proposalId: dispute.realms_proposal_id,
+      walletAddress: sessionWallet,
+      vote: validatedData.vote,
+      tokenAmount: validatedData.tokenAmount,
+    })
 
     const { data, error } = await supabase
       .from('votes')

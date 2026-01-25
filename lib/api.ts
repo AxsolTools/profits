@@ -42,6 +42,44 @@ export const api = {
     get: (id: string) => fetchAPI<any>(`/api/proofs/${id}`),
     stats: () => fetchAPI<any>('/api/proofs/stats'),
   },
+  transactions: {
+    list: (query?: { status?: string; limit?: number }) => {
+      const params = new URLSearchParams()
+      if (query?.status) params.set('status', query.status)
+      if (query?.limit) params.set('limit', query.limit.toString())
+      return fetchAPI<any>(`/api/transactions?${params.toString()}`)
+    },
+    get: (id: string) => fetchAPI<any>(`/api/transactions/${id}`),
+    create: (data: any) =>
+      fetchAPI<any>('/api/transactions', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  },
+  disputes: {
+    list: (query?: { status?: string; limit?: number }) => {
+      const params = new URLSearchParams()
+      if (query?.status) params.set('status', query.status)
+      if (query?.limit) params.set('limit', query.limit.toString())
+      return fetchAPI<any>(`/api/disputes?${params.toString()}`)
+    },
+    get: (id: string) => fetchAPI<any>(`/api/disputes/${id}`),
+    create: (data: any) =>
+      fetchAPI<any>('/api/disputes', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  },
+  votes: {
+    create: (data: any) =>
+      fetchAPI<any>('/api/votes', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  },
+  profiles: {
+    get: (address: string) => fetchAPI<any>(`/api/profiles/${address}`),
+  },
   verificationRequests: {
     create: (data: any) =>
       fetchAPI<any>('/api/verification-requests', {

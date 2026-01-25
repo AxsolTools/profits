@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getSessionWallet } from '@/lib/auth/session'
+import { getOrCreateProfileId } from '@/lib/auth/profile'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const formData = await request.formData()
     
     const transactionId = formData.get('transactionId') as string
@@ -17,12 +19,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    const sessionWallet = await getSessionWallet()
+    if (!sessionWallet) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const profileId = await getOrCreateProfileId(sessionWallet)
+
+    const { data: transaction } = await supabase
+      .from('transactions')
+      .select('buyer_wallet, seller_wallet')
+      .eq('id', transactionId)
+      .single()
+
+    if (!transaction || ![transaction.buyer_wallet, transaction.seller_wallet].includes(sessionWallet)) {
+      return NextResponse.json({ error: 'Not authorized for this transaction' }, { status: 403 })
     }
 
     // Upload file to Supabase Storage
@@ -52,7 +63,7 @@ export async function POST(request: NextRequest) {
       .from('evidence')
       .insert({
         transaction_id: transactionId,
-        uploaded_by: user.id,
+        uploaded_by: profileId,
         file_url: publicUrl,
         file_type: file.type,
         description: description || null,
