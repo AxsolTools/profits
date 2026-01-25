@@ -71,3 +71,21 @@ export async function recordRealmsVote(payload: RealmsVotePayload) {
 
   return response.json()
 }
+
+export async function getRealmsProposal(proposalId: string) {
+  const { baseUrl, apiKey } = getRealmsConfig()
+  const response = await fetch(`${baseUrl.replace(/\/$/, '')}/proposals/${proposalId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    throw new Error(`Realms proposal fetch failed: ${errorBody || response.statusText}`)
+  }
+
+  return response.json()
+}
