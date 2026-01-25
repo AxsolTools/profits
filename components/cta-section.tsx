@@ -32,7 +32,7 @@ export function CTASection() {
               Launch a Trustless Escrow
             </h2>
             <p className="mx-auto mb-10 max-w-xl text-pretty text-lg text-gray-600">
-              Secure funds on-chain, resolve disputes through governance, and settle instantly with automated, transparent execution.
+              Secure funds on-chain, resolve disputes through governance, and settle instantly.
             </p>
             
             {/* CTA buttons */}
