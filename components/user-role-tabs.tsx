@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import { Player } from '@remotion/player'
 import { DeveloperAPI } from './animations/developer-api'
 import { VotingROI } from './animations/voting-roi'
@@ -186,8 +187,13 @@ export function UserRoleTabs() {
               ))}
             </div>
 
-            <Button className="h-14 px-8 rounded-full bg-gray-900 text-white font-bold text-lg hover:bg-gray-800 transition-colors">
-              {activeTab === 'developers' ? 'Read API Docs' : 'Get Started'}
+            <Button
+              asChild
+              className="h-14 px-8 rounded-full bg-gray-900 text-white font-bold text-lg hover:bg-gray-800 transition-colors"
+            >
+              <Link href={activeTab === 'developers' ? 'https://docs.gotproof.xyz' : '/create'}>
+                {activeTab === 'developers' ? 'Read API Docs' : 'Get Started'}
+              </Link>
             </Button>
           </div>
 
