@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Montserrat } from 'next/font/google'
 import '@solana/wallet-adapter-react-ui/styles.css'
 import './globals.css'
+import { ThemeProvider } from '@/components/theme-provider'
 import { GlobalBackground } from '@/components/global-background'
 import { WalletAdapterProvider } from '@/components/wallet-provider'
 
@@ -21,12 +22,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${montserrat.variable} font-sans bg-white relative min-h-screen`}>
-        <WalletAdapterProvider>
-          <GlobalBackground />
-          <div className="relative z-10">
-            {children}
-          </div>
-        </WalletAdapterProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <WalletAdapterProvider>
+            <GlobalBackground />
+            <div className="relative z-10">
+              {children}
+            </div>
+          </WalletAdapterProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
