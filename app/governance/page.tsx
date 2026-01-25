@@ -14,8 +14,12 @@ export default function GovernancePage() {
   const [error, setError] = useState<string | null>(null)
 
   const handleDelegate = () => {
-    toast.success("Delegation Initiated", {
-      description: "Please confirm the transaction in your wallet."
+    toast.info("Governance Integration", {
+      description: "This will open the Realms DAO dashboard to deposit $PROOF for voting power (vPROOF).",
+      action: {
+        label: "Connect Realm",
+        onClick: () => window.open('https://app.realms.today/', '_blank')
+      }
     })
   }
 
@@ -64,17 +68,6 @@ export default function GovernancePage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
-      {/* Testnet Banner */}
-      <div className="bg-blue-50 border border-blue-100 px-4 py-3 rounded-lg flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">TESTNET</span>
-          <p className="text-sm text-blue-900 font-medium">Governance preview on Solana Devnet.</p>
-        </div>
-        <Button variant="ghost" size="sm" className="h-auto py-1 text-blue-700 hover:text-blue-900 text-xs font-bold" onClick={handleDelegate}>
-          Delegate Votes →
-        </Button>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Stats */}
         <div className="space-y-6">
@@ -84,6 +77,11 @@ export default function GovernancePage() {
             <p className="text-sm text-gray-600">Active disputes in voting</p>
             <div className="mt-4 text-xs text-gray-500">
               {resolvedCount} resolved • ${resolvedVolume.toFixed(2)} settled
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <Button onClick={handleDelegate} variant="outline" size="sm" className="w-full font-bold text-xs">
+                Delegate Votes to Join
+              </Button>
             </div>
           </div>
 
