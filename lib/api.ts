@@ -55,6 +55,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    update: (id: string, data: any) =>
+      fetchAPI<any>(`/api/transactions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
   },
   disputes: {
     list: (query?: { status?: string; limit?: number }) => {

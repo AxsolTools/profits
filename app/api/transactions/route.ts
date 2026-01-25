@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('transactions')
-      .select('*')
+      .select('*, disputes(id, status, resolution)')
       .or(`buyer_wallet.eq.${sessionWallet},seller_wallet.eq.${sessionWallet}`)
       .order('created_at', { ascending: false })
       .limit(limit)

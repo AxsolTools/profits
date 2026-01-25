@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { getCurrencyConfig, getStreamflowAmounts } from '@/lib/streamflow/config'
+import { getStreamflowClient } from '@/lib/streamflow/client'
 
 export default function DisputePage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState<'evidence' | 'vote'>('evidence')
@@ -12,7 +14,8 @@ export default function DisputePage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null)
   const [voteAmount, setVoteAmount] = useState('')
   const [uploading, setUploading] = useState(false)
-  const { publicKey } = useWallet()
+  const [actionLoading, setActionLoading] = useState(false)
+  const { publicKey, wallet } = useWallet()
 
   useEffect(() => {
     let mounted = true
@@ -91,6 +94,58 @@ export default function DisputePage({ params }: { params: { id: string } }) {
   const formatTimestamp = (value?: string) => {
     if (!value) return 'Pending'
     return new Date(value).toLocaleString()
+  }
+
+  const walletAddress = publicKey?.toBase58() || ''
+  const buyerWallet = dispute?.transactions?.buyer_wallet
+  const sellerWallet = dispute?.transactions?.seller_wallet
+  const isBuyer = walletAddress && buyerWallet === walletAddress
+  const isSeller = walletAddress && sellerWallet === walletAddress
+  const canRefund = dispute?.status === 'resolved' && dispute?.resolution === 'buyer' && isBuyer
+  const canRelease = dispute?.status === 'resolved' && dispute?.resolution === 'seller' && isSeller
+
+  const handleResolutionAction = async () => {
+    if (!dispute?.transactions?.streamflow_id) {
+      setError('Streamflow stream not found.')
+      return
+    }
+    if (!walletAddress) {
+      setError('Connect your wallet to continue.')
+      return
+    }
+    setActionLoading(true)
+    try {
+      if (!wallet?.adapter) {
+        throw new Error('Wallet adapter not available for signing.')
+      }
+      const { decimals, isNative } = getCurrencyConfig(dispute?.transactions?.currency || 'USDC')
+      const client = getStreamflowClient()
+
+      if (canRelease) {
+        const { totalAmount } = getStreamflowAmounts(
+          Number(dispute?.transactions?.amount || 0),
+          decimals
+        )
+        await client.withdraw(
+          { id: dispute.transactions.streamflow_id, amount: totalAmount },
+          { invoker: wallet.adapter, isNative }
+        )
+        await api.transactions.update(dispute.transaction_id, { status: 'released' })
+      } else if (canRefund) {
+        await client.cancel(
+          { id: dispute.transactions.streamflow_id },
+          { invoker: wallet.adapter, isNative }
+        )
+        await api.transactions.update(dispute.transaction_id, { status: 'refunded' })
+      }
+
+      const refreshed = await api.disputes.get(params.id)
+      setDispute(refreshed.dispute)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to execute resolution')
+    } finally {
+      setActionLoading(false)
+    }
   }
   
   return (
@@ -299,6 +354,40 @@ export default function DisputePage({ params }: { params: { id: string } }) {
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                       </div>
                     </button>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Resolution Action</p>
+                        {dispute?.status !== 'resolved' ? (
+                          <p className="text-sm text-gray-600">
+                            Awaiting governance resolution before funds can be released or refunded.
+                          </p>
+                        ) : dispute?.resolution === 'seller' ? (
+                          <p className="text-sm text-gray-600">
+                            Governance approved release to seller. Seller must withdraw funds.
+                          </p>
+                        ) : (
+                          <p className="text-sm text-gray-600">
+                            Governance approved refund to buyer. Buyer must cancel the stream.
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        className="h-10 px-5 font-bold"
+                        disabled={actionLoading || (!canRelease && !canRefund)}
+                        onClick={handleResolutionAction}
+                      >
+                        {actionLoading
+                          ? 'Processing...'
+                          : canRelease
+                            ? 'Release Funds'
+                            : canRefund
+                              ? 'Refund Buyer'
+                              : 'Awaiting Resolution'}
+                      </Button>
+                    </div>
                   </div>
                   
                   <div className="pt-6 border-t border-gray-100">

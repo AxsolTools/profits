@@ -3,11 +3,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { getCurrencyConfig, getStreamflowAmounts, parseInspectionPeriod } from '@/lib/streamflow/config'
+import { getStreamflowClient } from '@/lib/streamflow/client'
 
 export default function DashboardPage() {
+  const { publicKey, wallet } = useWallet()
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [actionId, setActionId] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -47,6 +52,34 @@ export default function DashboardPage() {
       disputes,
     }
   }, [transactions])
+
+  const handleRelease = async (tx: any) => {
+    if (!wallet?.adapter || !publicKey) {
+      setError('Connect your wallet to release funds.')
+      return
+    }
+    if (!tx.streamflow_id) {
+      setError('Streamflow stream not found.')
+      return
+    }
+    setActionId(tx.id)
+    try {
+      const { decimals, isNative } = getCurrencyConfig(tx.currency || 'USDC')
+      const { totalAmount } = getStreamflowAmounts(Number(tx.amount || 0), decimals)
+      const client = getStreamflowClient()
+      await client.withdraw(
+        { id: tx.streamflow_id, amount: totalAmount },
+        { invoker: wallet.adapter, isNative }
+      )
+      await api.transactions.update(tx.id, { status: 'released' })
+      const refreshed = await api.transactions.list({ limit: 20 })
+      setTransactions(refreshed.transactions || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to release funds')
+    } finally {
+      setActionId(null)
+    }
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -102,20 +135,45 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {transactions.map((tx) => (
-                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50/60 transition-colors">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-gray-900">{tx.title || 'Escrow Transaction'}</p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">
-                      {tx.category || 'general'} • {tx.escrow_status}
-                    </p>
+              {transactions.map((tx) => {
+                const createdAt = new Date(tx.created_at).getTime()
+                const inspectionSeconds = parseInspectionPeriod(tx?.metadata?.inspectionPeriod)
+                const inspectionPassed = Date.now() > createdAt + inspectionSeconds * 1000
+                const hasDispute = Array.isArray(tx.disputes) && tx.disputes.length > 0
+                const isSeller = publicKey?.toBase58() === tx.seller_wallet
+                const canRelease =
+                  tx.streamflow_id &&
+                  tx.escrow_status === 'locked' &&
+                  inspectionPassed &&
+                  !hasDispute &&
+                  isSeller
+
+                return (
+                  <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50/60 transition-colors">
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-gray-900">{tx.title || 'Escrow Transaction'}</p>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">
+                        {tx.category || 'general'} • {tx.escrow_status}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-gray-900">${Number(tx.amount).toFixed(2)}</p>
+                        <p className="text-xs text-gray-400">{tx.currency}</p>
+                      </div>
+                      {canRelease && (
+                        <button
+                          onClick={() => handleRelease(tx)}
+                          disabled={actionId === tx.id}
+                          className="h-9 px-4 rounded-lg bg-[var(--proof-primary)] text-white text-xs font-bold hover:bg-[var(--proof-primary-hover)]"
+                        >
+                          {actionId === tx.id ? 'Releasing...' : 'Release'}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-gray-900">${Number(tx.amount).toFixed(2)}</p>
-                    <p className="text-xs text-gray-400">{tx.currency}</p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
