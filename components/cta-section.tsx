@@ -29,19 +29,19 @@ export function CTASection() {
             </div>
             
             <h2 className="mb-4 text-balance text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
-              Ready to Prove Your Impact?
+              Launch a Trustless Escrow
             </h2>
             <p className="mx-auto mb-10 max-w-xl text-pretty text-lg text-gray-600">
-              Join the movement bringing transparency to creator support. Buy $PROOF and start verifying donations on-chain.
+              Secure funds on-chain, resolve disputes through governance, and settle instantly with Streamflow + Realms.
             </p>
             
             {/* CTA buttons */}
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                href="#"
+                href="/create"
                 className="group flex h-14 items-center gap-3 rounded-full bg-[var(--proof-primary)] px-10 text-lg font-semibold text-white transition-all hover:bg-[var(--proof-primary-hover)] hover:shadow-xl hover:shadow-[var(--proof-primary)]/30"
               >
-                Buy $PROOF
+                Create Escrow
                 <svg 
                   className="h-5 w-5 transition-transform group-hover:translate-x-1" 
                   fill="none" 

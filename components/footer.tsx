@@ -18,7 +18,7 @@ export function Footer() {
             />
             <div>
               <span className="text-lg font-bold text-gray-900">$PROOF</span>
-              <p className="text-sm text-gray-500">Verify Projects Spend, On-Chain</p>
+              <p className="text-sm text-gray-500">Trustless Escrow, Governed by Holders</p>
             </div>
           </div>
           
@@ -53,7 +53,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-8 border-t border-gray-100 pt-8 text-center">
           <p className="text-sm text-gray-400">
-            Payment Proofs - For the other 98% of creators
+            Proof Protocol - Secure settlement for every transaction
           </p>
         </div>
       </div>
